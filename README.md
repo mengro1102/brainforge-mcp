@@ -4,7 +4,7 @@
 
 > Turn your markdown notes into an AI-powered knowledge graph.
 
-[Andrej Karpathy's LLM Wiki pattern](https://x.com/karpathy/status/1909363262791352494)을 MCP 서버로 구현한 프로젝트입니다. 마크다운 위키를 지식 그래프로 변환하고, 어떤 LLM 클라이언트에서든 탐색·분석할 수 있습니다.
+[Andrej Karpathy's LLM Wiki pattern](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)을 MCP 서버로 구현한 프로젝트입니다. 마크다운 위키를 지식 그래프로 변환하고, 어떤 LLM 클라이언트에서든 탐색·분석할 수 있습니다.
 
 ## 핵심 아이디어
 
@@ -249,4 +249,4 @@ MIT
 
 ---
 
-Inspired by [Andrej Karpathy's LLM Wiki idea](https://x.com/karpathy/status/1909363262791352494).
+Inspired by [Andrej Karpathy's LLM Wiki idea](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f).
