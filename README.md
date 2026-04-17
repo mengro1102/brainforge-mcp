@@ -1,4 +1,6 @@
-# llm-wiki-mcp
+# brainforge-mcp
+
+[![PyPI](https://img.shields.io/pypi/v/brainforge-mcp)](https://pypi.org/project/brainforge-mcp/) [![Python](https://img.shields.io/pypi/pyversions/brainforge-mcp)](https://pypi.org/project/brainforge-mcp/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > Turn your markdown notes into an AI-powered knowledge graph.
 
@@ -17,7 +19,7 @@ Karpathy의 [LLM Wiki 패턴](https://x.com/karpathy/status/1909363262791352494)
 ### 1. 새 위키 초기화
 
 ```bash
-uvx llm-wiki-mcp init ~/my-brain
+uvx brainforge-mcp init ~/my-brain
 ```
 
 ### 2. MCP 클라이언트에 등록
@@ -27,7 +29,7 @@ uvx llm-wiki-mcp init ~/my-brain
   "mcpServers": {
     "wiki": {
       "command": "uvx",
-      "args": ["llm-wiki-mcp", "--vault", "~/my-brain/wiki"]
+      "args": ["brainforge-mcp", "--vault", "~/my-brain/wiki"]
     }
   }
 }
