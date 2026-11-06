@@ -369,6 +369,90 @@ def rebuild_graph() -> str:
     return "그래프 재빌드 완료 (메모리만, 파일 저장 안 함)"
 
 
+# ── v0.2 tools (English output; engines from mengro-agent-skills) ─────────
+
+try:
+    from . import engines as _engines  # noqa: F401  (puts engines/ on sys.path)
+except ImportError:
+    from llm_wiki_mcp import engines as _engines  # noqa: F401
+import graph_query as _gq  # noqa: E402
+import link_review as _lr  # noqa: E402
+import wiki_graph as _wg  # noqa: E402
+import wiki_lint as _wl  # noqa: E402
+
+# brainforge's own vault layout (`init`): pages carry title/tags/sources but no `type`.
+_BRAINFORGE_LINT = {
+    "curated": {"source": "sources", "concept": "concepts", "entity": "entities",
+                "synthesis": "syntheses", "comparison": "comparisons", "query": "queries",
+                "reference": "references"},
+    "required_keys": {"*": ["title", "tags", "sources"]},
+    "source_roots": [".", ".."],
+    "dangling_wikilinks": "warn",  # unwritten pages are growth suggestions here
+    "index_sections": ["sources", "concepts", "entities", "syntheses"],
+}
+
+
+class _Args:
+    def __init__(self, **kw):
+        self.__dict__.update(kw)
+
+
+@mcp.tool
+def search_wiki(query: str, hops: int = 1, limit: int = 8) -> str:
+    """Find which wiki pages to read for a question. Returns a ranked READING LIST
+    (path, score, why), not page bodies: read only the top 2-4 paths, then answer
+    from them and cite them. Matches slugs/titles/tags/aliases, expands along
+    [[wikilinks]], `related:` and `sources:`; falls back to page bodies when nothing
+    matches. Works in any language (Korean particles handled)."""
+    g = _wg.build(_wiki_dir)
+    res = _gq.cmd_search(g, _Args(query=query, hops=max(0, hops), limit=max(1, limit), fulltext=False))
+    return _gq.render("search", res)
+
+
+@mcp.tool
+def lint_wiki() -> str:
+    """Integrity check of the wiki after edits: invalid/duplicate YAML frontmatter,
+    broken [[wikilinks]] and links, missing sources, arXiv IDs corrupted by YAML
+    floats, index drift, glossary contradictions, foreign-script leakage.
+    Read-only. Fix every [E] in the pages, then call again until it says PASS.
+    A `wiki-lint.json` in the vault overrides the default layout."""
+    root = Path(_wiki_dir).resolve()
+    cfg_file = root / "wiki-lint.json"
+    cfg = _wl.load_config(cfg_file if cfg_file.exists() else None)
+    if not cfg_file.exists():
+        for k, v in _BRAINFORGE_LINT.items():
+            cfg[k] = v
+    return _wl.render_markdown(_wl.Linter(root, cfg).run())
+
+
+@mcp.tool
+def suggest_links(n: int = 3) -> str:
+    """Source/reference pages that are not linked to any concept yet, with
+    candidate concepts whose names appear in them. Candidates are word matches,
+    not judgments: read the page, keep only concepts it is really about, then
+    propose the `related:` change to the user and edit only after they approve."""
+    root = Path(_wiki_dir).resolve()
+    r = _lr.Review(root, root.parent / ".brainforge-link-ledger.json",
+                   ["source", "reference", "article"], ["concept", "entity", "synthesis", "comparison"])
+    linked = _wg.linked_to(r.g, r.targets)
+    rows = []
+    for slug, m in r.g["nodes"].items():
+        if slug in linked or m["type"] not in r.types:
+            continue
+        text = (root / m["path"]).read_text(encoding="utf-8", errors="replace")
+        cands = r.candidates(_wg.split_frontmatter(text)[1] + " " + m["title"])
+        rows.append((len(cands), slug, m, cands))
+    if not rows:
+        return "Every source/reference page is linked to at least one concept."
+    rows.sort(key=lambda x: (-x[0], x[1]))
+    out = [f"{len(rows)} page(s) not linked to any concept. Top {min(n, len(rows))}:", ""]
+    for _, slug, m, cands in rows[:max(1, n)]:
+        out.append(f"- {m['path']}  ({m['title']})")
+        out.append(f"  candidates: {', '.join(cands) if cands else '(none: choose from the concept list or skip)'}")
+    out += ["", "Read each page before proposing links. Ask the user before writing `related:`."]
+    return "\n".join(out)
+
+
 # ── init 명령 ──────────────────────────────────────────────
 
 INIT_STRUCTURE = {

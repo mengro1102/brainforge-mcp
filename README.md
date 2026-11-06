@@ -220,9 +220,31 @@ sources: [raw/articles/2026-04-17_lora-explained.md]
 | `causal_chain` | 인과 네트워크 — 상류/하류, 관계 자연어 해석 | LLM이 자동 호출 |
 | `graph_summary` | 위키 건강 리포트 — 규모, 밀도, 행동 제안 | LLM이 자동 호출 |
 | `rebuild_graph` | 그래프 재빌드 — 마크다운 변경 후 갱신 | LLM이 자동 호출 |
+| `search_wiki` | **v0.2** 질문 → 읽을 파일 목록 (그래프 확장, 본문 폴백, 한국어 조사 처리) | LLM이 자동 호출 |
+| `lint_wiki` | **v0.2** 무결성 검사 — YAML·중복 키·깨진 링크·출처·식별자·언어 누출 | 편집 후 LLM이 호출 |
+| `suggest_links` | **v0.2** 개념에 연결되지 않은 소스 페이지와 후보 개념 (쓰기는 사용자 승인 후) | LLM이 자동 호출 |
 
 > **참고**: 위키 페이지 생성/수정은 MCP 도구가 아닌 LLM이 직접 파일을 작성합니다.
 > brainforge-mcp는 "읽기 + 분석" 전문이고, "쓰기"는 LLM의 역할입니다.
+
+### v0.2 도구 사용 흐름
+
+```
+"LoRA 관련해서 내 위키에 뭐가 있어?"   → search_wiki("LoRA")   → 상위 2~4개 파일만 읽고 답변
+"방금 인제스트한 거 점검해줘"          → lint_wiki()           → [E]를 고치고 PASS 될 때까지 반복
+"아직 연결 안 된 소스 있어?"           → suggest_links()       → 읽고 제안 → 승인 후 related: 추가
+```
+
+`lint_wiki` 는 brainforge 볼트 구조(`init` 결과)에 맞춘 기본값을 씁니다. 아직 없는 페이지로 가는 `[[링크]]` 는
+오류가 아니라 경고(성장 제안)로 처리합니다. 볼트에 `wiki-lint.json` 을 두면 설정을 바꿀 수 있습니다.
+
+## English summary
+
+brainforge-mcp is an MCP server for Karpathy-style LLM wikis (works with Obsidian vaults).
+Tools: `explain_node`, `find_path`, `causal_chain`, `graph_summary`, `rebuild_graph`, plus in v0.2
+`search_wiki` (question → ranked reading list via the link graph), `lint_wiki` (integrity check after
+edits) and `suggest_links` (unlinked source pages with candidate concepts). The v0.2 engines are
+shared with the [mengro-agent-skills](https://github.com/mengro1102) SKILL.md collection.
 
 ## 인과 관계 표기
 

@@ -1,6 +1,6 @@
 [project]
 name = "brainforge-mcp"
-version = "0.1.0"
+version = "0.2.0"
 description = "MCP server for Karpathy-style LLM Wiki — turn your markdown notes into an AI-powered knowledge graph"
 readme = "README.md"
 license = {text = "MIT"}
